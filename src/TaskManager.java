@@ -5,36 +5,43 @@ public class TaskManager {
     private HashMap<Integer, Task> tasks;
     private HashMap<Integer, Epic> epics;
     private HashMap<Integer, Subtask> subtasks;
-    private int generatedId = 1;
+    private int generatedId;
 
     TaskManager() {
         tasks = new HashMap<>();
         epics = new HashMap<>();
         subtasks = new HashMap<>();
+        generatedId = 1;
     }
 
     public ArrayList<Task> getTasks() {
-        ArrayList<Task> tasksList = new ArrayList<>();
-        for (Task task : tasks.values()) {
-            tasksList.add(task);
-        }
-        return tasksList;
+        if (!tasks.isEmpty()) {
+            ArrayList<Task> tasksList = new ArrayList<>();
+            for (Task task : tasks.values()) {
+                tasksList.add(task);
+            }
+            return tasksList;
+        } else return null;
     }
 
     public ArrayList<Epic> getEpics() {
-        ArrayList<Epic> epicsList = new ArrayList<>();
-        for (Epic epic : epics.values()) {
-            epicsList.add(epic);
-        }
-        return epicsList;
+        if (!epics.isEmpty()) {
+            ArrayList<Epic> epicsList = new ArrayList<>();
+            for (Epic epic : epics.values()) {
+                epicsList.add(epic);
+            }
+            return epicsList;
+        } else return null;
     }
 
     public ArrayList<Subtask> getSubtasks() {
-        ArrayList<Subtask> subtasksList = new ArrayList<>();
-        for (Subtask subtask : subtasks.values()) {
-            subtasksList.add(subtask);
-        }
-        return subtasksList;
+        if (!subtasks.isEmpty()) {
+            ArrayList<Subtask> subtasksList = new ArrayList<>();
+            for (Subtask subtask : subtasks.values()) {
+                subtasksList.add(subtask);
+            }
+            return subtasksList;
+        } else return null;
     }
 
     public void clearTasks() {
@@ -94,7 +101,7 @@ public class TaskManager {
     }
 
     public void updateTask(Task task) {
-        if (tasks.containsKey(task.id)) {
+        if (task != null && tasks.containsKey(task.id)) {
             tasks.remove(task.id);
             task.id = generatedId++;
             tasks.put(task.id, task);
@@ -102,7 +109,7 @@ public class TaskManager {
     }
 
     public void updateEpic(Epic epic) {
-        if (epics.containsKey(epic.id)) {
+        if (epic != null && epics.containsKey(epic.id)) {
             epics.remove(epic.id);
             epic.id = generatedId++;
             epics.put(epic.id, epic);
@@ -113,7 +120,7 @@ public class TaskManager {
     }
 
     public void updateSubtask(Subtask subtask) {
-        if (subtasks.containsKey(subtask.id)) {
+        if (subtask != null && subtasks.containsKey(subtask.id)) {
             subtasks.remove(subtask.id);
             epics.get(subtask.getEpicId()).getSubtaskIds().remove(subtask.id);
             subtask.id = generatedId++;
