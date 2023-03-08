@@ -22,6 +22,9 @@ public class Main {
         printAllTasks();
         taskManager.deleteTaskById(8);
         taskManager.deleteEpicById(3);
+        Epic updateEpic = taskManager.getEpicById(6);
+        updateEpic.setName("Погулять с друзьями");
+        taskManager.updateEpic(updateEpic);
         printAllTasks();
     }
 
