@@ -27,8 +27,11 @@ public class Main {
         }
 
         System.out.println("-------------------");
-        inMemoryTaskManager.deleteTaskById(2);
-        inMemoryTaskManager.deleteEpicById(3);
+//        inMemoryTaskManager.deleteTaskById(2);
+//        inMemoryTaskManager.deleteEpicById(3);
+        inMemoryTaskManager.clearEpics();
+        inMemoryTaskManager.clearTasks();
+        inMemoryTaskManager.clearSubtasks();
 
         for (Task tasks : inMemoryTaskManager.getHistory()) {
             System.out.println(tasks);
