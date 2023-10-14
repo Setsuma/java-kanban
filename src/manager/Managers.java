@@ -8,4 +8,11 @@ public class Managers {
     public static HistoryManager getDefaultHistory() {
         return new InMemoryHistoryManager();
     }
-}
+
+    public static FileBackedTasksManager loadFromFile(String path){
+        FileBackedTasksManager fileManager = new FileBackedTasksManager(path);
+        fileManager.upload();
+        return fileManager;
+    }
+    }
+

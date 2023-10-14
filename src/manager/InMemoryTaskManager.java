@@ -10,11 +10,11 @@ import java.util.HashMap;
 import java.util.List;
 
 public class InMemoryTaskManager implements TaskManager {
-    private final HashMap<Integer, Task> tasks = new HashMap<>();
-    private final HashMap<Integer, Epic> epics = new HashMap<>();
-    private final HashMap<Integer, Subtask> subtasks = new HashMap<>();
-    private final HistoryManager history = Managers.getDefaultHistory();
-    private int generatedId = 1;
+    protected final HashMap<Integer, Task> tasks = new HashMap<>();
+    protected final HashMap<Integer, Epic> epics = new HashMap<>();
+    protected final HashMap<Integer, Subtask> subtasks = new HashMap<>();
+    protected final HistoryManager history = Managers.getDefaultHistory();
+    protected int generatedId = 1;
 
     @Override
     public ArrayList<Task> getTasks() {
@@ -180,7 +180,7 @@ public class InMemoryTaskManager implements TaskManager {
         return history.getHistory();
     }
 
-    private void updateEpicStatus(Epic epic) {
+    protected void updateEpicStatus(Epic epic) {
         ArrayList<Integer> subs = epic.getSubtasksIds();
         if (subs.isEmpty()) {
             epic.setStatus(Status.NEW);

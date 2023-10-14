@@ -1,3 +1,4 @@
+import manager.FileBackedTasksManager;
 import manager.Managers;
 import manager.TaskManager;
 import tasks.Epic;
@@ -6,34 +7,32 @@ import tasks.Task;
 
 public class Main {
     public static void main(String[] args) {
-        TaskManager inMemoryTaskManager = Managers.getDefault();
-        inMemoryTaskManager.createTask(new Task("Сходить в магазин", "В магазин около дома"));
-        inMemoryTaskManager.createTask(new Task("Сходить на тренировку", "По волейболу"));
-        inMemoryTaskManager.createEpic(new Epic("Убраться дома", "Завтра"));
-        inMemoryTaskManager.createSubtask(new Subtask("Помыть полы", "В комнате", 3));
-        inMemoryTaskManager.createSubtask(new Subtask("Протереть стол", "В комнате", 3));
-        inMemoryTaskManager.createSubtask(new Subtask("Пригласить друзей", "Позвонить им", 3));
-        inMemoryTaskManager.createEpic(new Epic("Выйти погулять", "В выходные"));
+        FileBackedTasksManager fileBackedTaskManager = Managers.loadFromFile(".\\java-kanban-main\\src\\save");
 
-        inMemoryTaskManager.getTaskById(2);
-        inMemoryTaskManager.getTaskById(1);
-        inMemoryTaskManager.getSubtaskById(5);
-        inMemoryTaskManager.getEpicById(3);
-        inMemoryTaskManager.getEpicById(7);
-        inMemoryTaskManager.getTaskById(1);
+//        fileBackedTaskManager.createTask(new Task("Погулять", "Во дворе"));
+//        fileBackedTaskManager.createTask(new Task("Сходить на тренировку", "По волейболу"));
+//        fileBackedTaskManager.createEpic(new Epic("Убраться дома", "Завтра"));
+//        fileBackedTaskManager.createSubtask(new Subtask("Помыть полы", "В комнате", 3));
+//        fileBackedTaskManager.createSubtask(new Subtask("Протереть стол", "В комнате", 3));
+//        fileBackedTaskManager.createSubtask(new Subtask("Пригласить друзей", "Позвонить им", 3));
+//        fileBackedTaskManager.createEpic(new Epic("Заняться программированием на Java", "В выходные"));
+//        fileBackedTaskManager.getTaskById(1);
+//        fileBackedTaskManager.getSubtaskById(5);
+//        fileBackedTaskManager.getEpicById(3);
+//        fileBackedTaskManager.getEpicById(7);
+//        fileBackedTaskManager.getTaskById(1);
 
-        for (Task tasks : inMemoryTaskManager.getHistory()) {
+        for (Task tasks : fileBackedTaskManager.getEpics()) {
             System.out.println(tasks);
         }
 
         System.out.println("-------------------");
-//        inMemoryTaskManager.deleteTaskById(2);
-//        inMemoryTaskManager.deleteEpicById(3);
-        inMemoryTaskManager.clearEpics();
-        inMemoryTaskManager.clearTasks();
-        inMemoryTaskManager.clearSubtasks();
+        for (Task tasks : fileBackedTaskManager.getTasks()) {
+            System.out.println(tasks);
+        }
 
-        for (Task tasks : inMemoryTaskManager.getHistory()) {
+        System.out.println("-------------------");
+        for (Task tasks : fileBackedTaskManager.getHistory()) {
             System.out.println(tasks);
         }
     }
