@@ -180,7 +180,7 @@ public class InMemoryTaskManager implements TaskManager {
         return history.getHistory();
     }
 
-    protected void updateEpicStatus(Epic epic) {
+    private void updateEpicStatus(Epic epic) {
         ArrayList<Integer> subs = epic.getSubtasksIds();
         if (subs.isEmpty()) {
             epic.setStatus(Status.NEW);
