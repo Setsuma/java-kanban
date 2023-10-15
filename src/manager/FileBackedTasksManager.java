@@ -41,7 +41,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     public static FileBackedTasksManager loadFromFile(String path) {
         FileBackedTasksManager newManager = new FileBackedTasksManager(path);
         List<Integer> historyId = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
+        try {
             List<String> strings = Files.readAllLines(Paths.get(path));
             boolean startHistory = false;
             for (int i = 1; i < strings.size(); i++) {
