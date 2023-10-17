@@ -97,7 +97,7 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
         taskManager.createSubtask(subtask2);
 
         long epicDuration = epic.getDuration().toMinutes();
-        assertEquals(30, epicDuration);
+        assertEquals(20, epicDuration);
     }
 
     @Test

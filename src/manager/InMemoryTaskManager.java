@@ -208,10 +208,13 @@ public class InMemoryTaskManager implements TaskManager {
     protected boolean isNotIntersects(Task newTask) {
         for (Task task : sortedTasks) {
             if (task.getId().equals(newTask.getId())) continue;
-            if ((newTask.getStartTime().isAfter(task.getStartTime()) && newTask.getStartTime().isBefore(task.getEndTime()))
-                    || (newTask.getEndTime().isAfter(task.getStartTime()) && newTask.getEndTime().isBefore(task.getEndTime()))
-                    || (newTask.getStartTime().isBefore(task.getStartTime()) && newTask.getEndTime().isAfter(task.getEndTime())))
-                return false;
+            if (!newTask.getEndTime().isAfter(task.getStartTime())) {// newTimeEnd <= existTimeStart
+                continue;
+            }
+            if (!task.getEndTime().isAfter(newTask.getStartTime())) {// existTimeEnd <= newTimeStart
+                continue;
+            }
+            return false;
         }
         return true;
     }
@@ -222,15 +225,18 @@ public class InMemoryTaskManager implements TaskManager {
             epic.setStatus(Status.NEW);
             epic.setStartTime(LocalDateTime.now());
             epic.setEndTime(LocalDateTime.now());
+            epic.setDuration(Duration.ofMinutes(0));
             return;
         }
         Status status = null;
+        long minutes = 0;
         LocalDateTime first = subtasks.get(subs.get(0)).getStartTime();
         LocalDateTime last = subtasks.get(subs.get(0)).getEndTime();
         for (int id : subs) {
             final Subtask subtask = subtasks.get(id);
             if (subtask.getStartTime().isBefore(first)) first = subtask.getStartTime();
             if (subtask.getEndTime().isAfter(last)) last = subtask.getEndTime();
+            minutes += subtask.getDuration().toMinutes();
             if (status == null) {
                 status = subtask.getStatus();
                 continue;
@@ -244,7 +250,7 @@ public class InMemoryTaskManager implements TaskManager {
         }
         epic.setStartTime(first);
         epic.setEndTime(last);
-        epic.setDuration(Duration.between(first, last));
+        epic.setDuration(Duration.ofMinutes(minutes));
         epic.setStatus(status);
     }
 
