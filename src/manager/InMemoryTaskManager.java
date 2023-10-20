@@ -1,7 +1,7 @@
 package manager;
 
 import tasks.Epic;
-import tasks.Status;
+import tasks.taskConditions.Status;
 import tasks.Subtask;
 import tasks.Task;
 

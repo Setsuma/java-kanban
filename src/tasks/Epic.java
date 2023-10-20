@@ -1,5 +1,7 @@
 package tasks;
 
+import tasks.taskConditions.TaskType;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -15,6 +17,10 @@ public class Epic extends Task {
         startTime = LocalDateTime.now();
         endTime = LocalDateTime.now();
         duration = Duration.ofMinutes(0);
+    }
+
+    public Epic() {
+        subtaskIds = new ArrayList<>();
     }
 
     public ArrayList<Integer> getSubtasksIds() {

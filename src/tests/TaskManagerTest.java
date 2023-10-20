@@ -4,7 +4,9 @@ import manager.TaskManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tasks.*;
+import tasks.taskConditions.Status;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -14,11 +16,15 @@ public abstract class TaskManagerTest<T extends TaskManager> {
 
     protected T taskManager;
 
-    protected abstract T createTaskManager();
+    protected abstract T createTaskManager() throws IOException;
 
     @BeforeEach
     void beforeEach() {
-        taskManager = createTaskManager();
+        try {
+            taskManager = createTaskManager();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
@@ -725,5 +731,3 @@ public abstract class TaskManagerTest<T extends TaskManager> {
         assertEquals(task1, history.get(1));
     }
 }
-
-

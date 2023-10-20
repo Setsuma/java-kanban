@@ -1,6 +1,10 @@
 package manager;
 
+import manager.exceptions.ManagerSaveException;
+import manager.exceptions.ManagerUploadException;
 import tasks.*;
+import tasks.taskConditions.Status;
+import tasks.taskConditions.TaskType;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -15,14 +19,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class FileBackedTasksManager extends InMemoryTaskManager {
-    private final Path filePath;
+    private Path filePath;
     private final String HEADER = "id,type,name,status,description,epic,startTime,duration,endTime\n";
 
     public FileBackedTasksManager(String path) {
         filePath = Paths.get(path);
     }
 
-    private void save() {
+    protected FileBackedTasksManager() {
+    }
+
+    protected void save() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath.toString()))) {
             writer.write(HEADER);
             for (Task task : super.getTasks()) {
@@ -123,16 +130,16 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         return Arrays.stream(value.split(",")).map(Integer::parseInt).collect(Collectors.toList());
     }
 
-    private void addTask(Task task) {
+    protected void addTask(Task task) {
         tasks.put(task.getId(), task);
         sortedTasks.add(task);
     }
 
-    private void addEpic(Epic epic) {
+    protected void addEpic(Epic epic) {
         epics.put(epic.getId(), epic);
     }
 
-    private void addSubtask(Subtask subtask) {
+    protected void addSubtask(Subtask subtask) {
         subtasks.put(subtask.getId(), subtask);
         epics.get(subtask.getEpicId()).addSubtaskId(subtask.getId());
         sortedTasks.add(subtask);

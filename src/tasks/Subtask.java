@@ -1,18 +1,26 @@
 package tasks;
 
+import tasks.taskConditions.TaskType;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Subtask extends Task {
-    private final int epicId;
+    private int epicId;
 
     public Subtask(String name, String description, int epicId, LocalDateTime startTime, long durationInMinutes) {
         super(name, description, startTime, durationInMinutes);
         this.epicId = epicId;
     }
 
+    public Subtask(){};
+
     public Integer getEpicId() {
         return epicId;
+    }
+
+    public void setEpicId(int epicId) {
+        this.epicId = epicId;
     }
 
     @Override

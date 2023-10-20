@@ -1,5 +1,8 @@
 package tasks;
 
+import tasks.taskConditions.Status;
+import tasks.taskConditions.TaskType;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -25,6 +28,8 @@ public class Task {
         this.name = name;
         this.description = description;
     }
+
+    public Task(){};
 
     public String getName() {
         return name;
