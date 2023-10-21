@@ -2,24 +2,31 @@ package manager;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
+import kvServer.KVServer;
 import manager.jsonTransformation.TaskGson;
 import tasks.Epic;
 import tasks.Subtask;
 import tasks.Task;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class HttpTaskManager extends FileBackedTasksManager {
-    private final KVTaskClient client;
+    private KVTaskClient client;
+    private KVServer server;
+    private final String serverURL;
     private final Gson gson;
     private final Type listType;
     private final Type listTypeEpic;
     private final Type listTypeSubtask;
+    private final Type listTypeHistory;
 
     public HttpTaskManager(String serverURL) {
-        client = new KVTaskClient(serverURL);
+        this.serverURL = serverURL;
+        client = setUpClient();
         gson = TaskGson.getTaskGson();
         listType = new TypeToken<List<Task>>() {
         }.getType();
@@ -27,14 +34,21 @@ public class HttpTaskManager extends FileBackedTasksManager {
         }.getType();
         listTypeSubtask = new TypeToken<List<Subtask>>() {
         }.getType();
+        listTypeHistory = new TypeToken<List<Integer>>() {
+        }.getType();
     }
 
     @Override
     protected void save() {
-        client.put("tasks", gson.toJson(getTasks()));
-        client.put("epics", gson.toJson(getEpics()));
-        client.put("subtasks", gson.toJson(getSubtasks()));
-        client.put("history", gson.toJson(history.getHistory()));
+        if (client != null) {
+            client.put("tasks", gson.toJson(getTasks()));
+            client.put("epics", gson.toJson(getEpics()));
+            client.put("subtasks", gson.toJson(getSubtasks()));
+            client.put("history", gson.toJson(getHistoryAsIdList()));
+        } else {
+            client = setUpClient();
+            save();
+        }
     }
 
     public static HttpTaskManager loadFromServer() {
@@ -42,7 +56,7 @@ public class HttpTaskManager extends FileBackedTasksManager {
         List<Task> newTasks = taskManager.gson.fromJson(taskManager.client.load("tasks"), taskManager.listType);
         List<Epic> newEpics = taskManager.gson.fromJson((taskManager.client.load("epics")), taskManager.listTypeEpic);
         List<Subtask> newSubtasks = taskManager.gson.fromJson((taskManager.client.load("subtasks")), taskManager.listTypeSubtask);
-        List<Task> newHistory = taskManager.gson.fromJson((taskManager.client.load("history")), taskManager.listType);
+        List<Integer> newHistory = taskManager.gson.fromJson((taskManager.client.load("history")), taskManager.listTypeHistory);
         Collections.reverse(newHistory);
 
         for (Task task : newTasks) {
@@ -57,11 +71,41 @@ public class HttpTaskManager extends FileBackedTasksManager {
             if (subtask.getId() >= taskManager.generatedId) taskManager.generatedId = subtask.getId() + 1;
             taskManager.addSubtask(subtask);
         }
-        for (Task task : newHistory) {
-            int id = task.getId();
-            if (taskManager.tasks.containsKey(id)) taskManager.history.add(task);
-            else taskManager.history.add(taskManager.subtasks.get(id));
+        for (int id : newHistory) {
+            if (taskManager.tasks.containsKey(id)) taskManager.history.add(taskManager.getTaskById(id));
+            else if (taskManager.epics.containsKey(id)) taskManager.history.add(taskManager.getEpicById(id));
+            else taskManager.history.add(taskManager.getSubtaskById(id));
         }
         return taskManager;
+    }
+
+    private List<Integer> getHistoryAsIdList() {
+        List<Integer> ids = new ArrayList<>();
+        for (Task task : getHistory()) {
+            ids.add(task.getId());
+        }
+        return ids;
+    }
+
+    public void stopInnerServer() {
+        if (server != null) {
+            server.stop();
+            server = null;
+            client = null;
+        }
+    }
+
+    private KVTaskClient setUpClient() {
+        try {
+            return new KVTaskClient(serverURL);
+        } catch (RuntimeException runtimeException) {
+            try {
+                server = new KVServer();
+                server.start();
+            } catch (IOException ioException) {
+                throw new RuntimeException("Сервера под таким URL нет");
+            }
+            return new KVTaskClient(serverURL);
+        }
     }
 }

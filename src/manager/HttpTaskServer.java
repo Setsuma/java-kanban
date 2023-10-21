@@ -22,7 +22,6 @@ public class HttpTaskServer {
     private final int PORT = 8079;
     private final HttpTaskManager taskManager;
     private final HttpServer server;
-    public static Gson gson = TaskGson.getTaskGson();
 
     public HttpTaskServer() throws IOException {
         taskManager = HttpTaskManager.loadFromServer();
@@ -34,15 +33,17 @@ public class HttpTaskServer {
 
     public void stop() {
         System.out.println("TaskServer stopped");
+        taskManager.stopInnerServer();
         server.stop(0);
     }
 
-    public HttpTaskManager getTaskManager(){
+    public HttpTaskManager getTaskManager() {
         return taskManager;
     }
 
-    static class TaskHandler implements HttpHandler {
+    private class TaskHandler implements HttpHandler {
         private final HttpTaskManager taskManager;
+        private Gson gson = TaskGson.getTaskGson();
 
         public TaskHandler(HttpTaskManager taskManager) {
             this.taskManager = taskManager;
@@ -56,53 +57,65 @@ public class HttpTaskServer {
             boolean isQueryStringExists = exchange.getRequestURI().getQuery() != null;
             switch (method) {
                 case "GET":
-                    if (pathSegments.length == 2 || pathSegments[2].isBlank()) {
-                        handleGetAllTasks(exchange);
-                    } else if (pathSegments[2].equals("task")) {
-                        if (isQueryStringExists)
-                            handleGetTaskById(exchange, getIdFromQuery(exchange.getRequestURI().getQuery()));
-                        else handleGetTasks(exchange);
-                    } else if (pathSegments[2].equals("epic")) {
-                        if (isQueryStringExists)
-                            handleGetEpicById(exchange, getIdFromQuery(exchange.getRequestURI().getQuery()));
-                        else handleGetEpics(exchange);
-                    } else if (pathSegments[2].equals("subtask")) {
-                        if (isQueryStringExists) {
-                            if (pathSegments.length == 4 && pathSegments[3].equals("epic"))
-                                handleGetSubtasksByEpicId(exchange, getIdFromQuery(exchange.getRequestURI().getQuery()));
-                            else handleGetSubtaskById(exchange, getIdFromQuery(exchange.getRequestURI().getQuery()));
-                        } else handleGetSubtasks(exchange);
-                    } else if (pathSegments[2].equals("history")) {
-                        handleGetHistory(exchange);
-                    } else handleNotFound(exchange);
+                    handleGetRequest(exchange, pathSegments, isQueryStringExists);
                     break;
                 case "POST":
-                    if (pathSegments[2].equals("task")) {
-                        handleCreateTask(exchange);
-                    } else if (pathSegments[2].equals("epic")) {
-                        handleCreateEpic(exchange);
-                    } else if (pathSegments[2].equals("subtask")) {
-                        handleCreateSubtask(exchange);
-                    } else handleNotFound(exchange);
+                    handlePostRequest(exchange, pathSegments, isQueryStringExists);
                     break;
                 case "DELETE":
-                    if (pathSegments[2].equals("task")) {
-                        if (isQueryStringExists)
-                            handleDeleteTaskById(exchange, getIdFromQuery(exchange.getRequestURI().getQuery()));
-                        else handleDeleteTasks(exchange);
-                    } else if (pathSegments[2].equals("epic")) {
-                        if (isQueryStringExists)
-                            handleDeleteEpicById(exchange, getIdFromQuery(exchange.getRequestURI().getQuery()));
-                        else handleDeleteEpics(exchange);
-                    } else if (pathSegments[2].equals("subtask")) {
-                        if (isQueryStringExists)
-                            handleDeleteSubtaskById(exchange, getIdFromQuery(exchange.getRequestURI().getQuery()));
-                        else handleDeleteSubtasks(exchange);
-                    } else handleNotFound(exchange);
+                    handleDeleteRequest(exchange, pathSegments, isQueryStringExists);
                     break;
                 default:
                     handleMethodNotAllowed(exchange);
             }
+        }
+
+        private void handleGetRequest(HttpExchange exchange, String[] pathSegments, boolean isQueryStringExists) throws IOException {
+            if (pathSegments.length == 2 || pathSegments[2].isBlank()) {
+                handleGetAllTasks(exchange);
+            } else if (pathSegments[2].equals("task")) {
+                if (isQueryStringExists)
+                    handleGetTaskById(exchange, getIdFromQuery(exchange.getRequestURI().getQuery()));
+                else handleGetTasks(exchange);
+            } else if (pathSegments[2].equals("epic")) {
+                if (isQueryStringExists)
+                    handleGetEpicById(exchange, getIdFromQuery(exchange.getRequestURI().getQuery()));
+                else handleGetEpics(exchange);
+            } else if (pathSegments[2].equals("subtask")) {
+                if (isQueryStringExists) {
+                    if (pathSegments.length == 4 && pathSegments[3].equals("epic"))
+                        handleGetSubtasksByEpicId(exchange, getIdFromQuery(exchange.getRequestURI().getQuery()));
+                    else handleGetSubtaskById(exchange, getIdFromQuery(exchange.getRequestURI().getQuery()));
+                } else handleGetSubtasks(exchange);
+            } else if (pathSegments[2].equals("history")) {
+                handleGetHistory(exchange);
+            } else handleNotFound(exchange);
+        }
+
+        private void handlePostRequest(HttpExchange exchange, String[] pathSegments, boolean isQueryStringExists) throws IOException {
+            if (pathSegments[2].equals("task")) {
+                handleCreateTask(exchange);
+            } else if (pathSegments[2].equals("epic")) {
+                handleCreateEpic(exchange);
+            } else if (pathSegments[2].equals("subtask")) {
+                handleCreateSubtask(exchange);
+            } else handleNotFound(exchange);
+        }
+
+        private void handleDeleteRequest(HttpExchange exchange, String[] pathSegments, boolean isQueryStringExists) throws IOException {
+            if (pathSegments[2].equals("task")) {
+                if (isQueryStringExists)
+                    handleDeleteTaskById(exchange, getIdFromQuery(exchange.getRequestURI().getQuery()));
+                else handleDeleteTasks(exchange);
+            } else if (pathSegments[2].equals("epic")) {
+                if (isQueryStringExists)
+                    handleDeleteEpicById(exchange, getIdFromQuery(exchange.getRequestURI().getQuery()));
+                else handleDeleteEpics(exchange);
+            } else if (pathSegments[2].equals("subtask")) {
+                if (isQueryStringExists)
+                    handleDeleteSubtaskById(exchange, getIdFromQuery(exchange.getRequestURI().getQuery()));
+                else handleDeleteSubtasks(exchange);
+            } else handleNotFound(exchange);
         }
 
         private int getIdFromQuery(String query) {
@@ -288,7 +301,7 @@ public class HttpTaskServer {
             sendResponse(exchange, 400, message);
         }
 
-        private static void handleNotFound(HttpExchange exchange) throws IOException {
+        private void handleNotFound(HttpExchange exchange) throws IOException {
             sendResponse(exchange, 404, "Not Found");
         }
 
@@ -298,7 +311,7 @@ public class HttpTaskServer {
             return new String(requestBodyBytes, StandardCharsets.UTF_8);
         }
 
-        private static void sendResponse(HttpExchange exchange, int statusCode, String response) throws IOException {
+        private void sendResponse(HttpExchange exchange, int statusCode, String response) throws IOException {
             byte[] responseBytes = response.getBytes(StandardCharsets.UTF_8);
             exchange.sendResponseHeaders(statusCode, responseBytes.length);
             OutputStream responseBody = exchange.getResponseBody();

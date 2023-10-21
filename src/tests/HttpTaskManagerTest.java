@@ -20,14 +20,12 @@ public class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager> {
 
     @Override
     protected HttpTaskManager createTaskManager() throws IOException {
-        kvServer = new KVServer();
-        kvServer.start();
         return new HttpTaskManager("http://localhost:8078");
     }
 
     @AfterEach
     public void shutDown() {
-        kvServer.stop();
+        taskManager.stopInnerServer();
     }
 
     @Test
